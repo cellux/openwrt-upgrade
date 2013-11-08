@@ -2,24 +2,22 @@
 
 I have a TP-Link WR842ND router at home whose firmware I replaced with [OpenWrt](https://openwrt.org/).
 
-With the help of OpenWrt, I can use the router for the following tasks:
+I use the router for the following tasks:
 
-* internet sharing for my T-Mobile 3G USB mobile stick
-* file server (shares two NTFS disks over NFS and CIFS)
+* sharing the internet access provided by my T-Mobile 3G USB mobile stick
+* as a file server (the router shares two NTFS disks over NFS and CIFS)
 
-Lately it became necessary to upgrade the router (I needed a `8021q` kernel module for segmenting the router's switch into two separate VLANs but it was not available for my kernel version any more).
+Lately it became necessary to upgrade the router (I needed a `8021q` kernel module for segmenting the router's switch into two separate VLANs but this module was not available for my kernel version any more).
 
-I wrote this document to have a reference at hand when I need to go through this process again.
+I wrote this document to have a reference at hand when I need to go through the upgrade process again.
 
 ## Steps
 
 1.	Make a backup of the `/overlay` directory (this contains all changes made to the default fs).
 
 2.	Download OpenWRT 12.09 (Attitude Adjustment) upgrade image and the md5sums:
-
 	* http://downloads.openwrt.org/attitude_adjustment/12.09/ar71xx/generic/openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
 	* http://downloads.openwrt.org/attitude_adjustment/12.09/ar71xx/generic/md5sums
-
 3.	Verify the download:
 
 	```bash
@@ -45,13 +43,13 @@ I wrote this document to have a reference at hand when I need to go through this
 	Other methods to free up RAM:
 
 	```bash
-	rm -rf rm -r /tmp/opkg-lists
+	rm -rf /tmp/opkg-lists
 	echo 3 > /proc/sys/vm/drop_caches
 	```
 
 7.	See `/etc/sysupgrade.conf` to check/edit the list of files/directories which will be preserved by the upgrade.
 
-	I didn't add anything to `/etc/sysupgrade.conf` because the docs say that the files returned by `$(opkg list-changed-conffiles)` are automatically preserved and I thought this would be enough.
+	I didn't add anything to `/etc/sysupgrade.conf` because the [docs](http://wiki.openwrt.org/doc/techref/sysupgrade) say that the files returned by `$(opkg list-changed-conffiles)` will be automatically preserved and this seemed to be enough.
 
 8.	Copy upgrade image to /tmp on router, then do the upgrade:
 
@@ -59,7 +57,9 @@ I wrote this document to have a reference at hand when I need to go through this
 	sysupgrade -v /tmp/openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
 	```
 
-	Try a cold reset (unplug-wait-replug) if the router doesn't come up after the upgrade.
+	When the upgrade is complete, the router shall reboot with all network settings preserved.
+
+	If the router doesn't come up, try a cold reset (unplug-wait-replug).
 
 9.	Install extra packages:
 
