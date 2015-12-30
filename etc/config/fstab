@@ -1,0 +1,31 @@
+config global
+	option anon_swap 0
+	option anon_mount 0
+	option auto_swap 0
+	option auto_mount 1
+	option delay_root 0
+	option check_fs 0	
+	
+config mount
+	option target	/mnt/shares/passport
+	option label	passport
+	option fstype	ntfs-3g
+	option options	rw,uid=65534,gid=65534,umask=002
+	option enabled	1
+	option enabled_fsck 0
+
+config mount
+	option target	/mnt/shares/samsung
+	option label	SAMSUNG
+	option fstype	ntfs-3g
+	option options	rw,uid=65534,gid=65534,umask=002
+	option enabled	1
+	option enabled_fsck 0
+
+config mount
+	option target	/mnt/shares/bitpool
+	option label	bitpool
+	option fstype	ext4
+	option options	rw
+	option enabled	1
+	option enabled_fsck	0

@@ -1,0 +1,17 @@
+info() {
+  echo "$@" | logger
+}
+
+if [ "$ACTION" = "add" -a "$SUBSYSTEM" = "block" -a "$DEVTYPE" = "partition" ]; then
+  label="$(blkid -s LABEL -o value /dev/$DEVNAME | tr 'A-Z' 'a-z')"
+  if [ -n "$label" -a -e "/mnt/shares/$label" ]; then
+    if ! mountpoint -q "/mnt/shares/$label"; then
+      info "Mounting /dev/$DEVNAME to /mnt/shares/$label"
+      /bin/mount -t ntfs-3g -o rw,uid=65534,gid=65534,umask=002 /dev/$DEVNAME /mnt/shares/$label
+    else
+      info "/dev/$DEVNAME already mounted to /mnt/shares/$label"
+    fi
+  else
+    info "Detected disk partition with label=[$label], but mountpoint /mnt/shares/$label does not exist"
+  fi
+fi

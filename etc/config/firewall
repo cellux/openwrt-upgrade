@@ -1,0 +1,13 @@
+config defaults
+	# after all other options:
+	option disable_ipv6	1
+
+# at the end:
+
+config rule
+        option name             Enable-SSH-for-share-user
+        option src              wan
+        option dest_port        22
+        option proto            tcp
+        option target           ACCEPT
+

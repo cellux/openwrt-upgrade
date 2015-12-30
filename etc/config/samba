@@ -1,0 +1,14 @@
+config samba
+	option 'name'			'Jupiter'
+	option 'workgroup'		'WORKGROUP'
+	option 'description'		'Jupiter OpenWrt'
+	option 'homes'			'0'
+
+config sambashare
+        option 'read_only'              no
+        option 'create_mask'            0666
+        option 'dir_mask'               0777
+        option 'name'                   Shares
+        option 'path'                   /mnt/shares
+        option 'guest_ok'               yes
+

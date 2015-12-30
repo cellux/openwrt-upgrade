@@ -17,27 +17,28 @@ router from scratch or upgrade to a newer OpenWrt version.
 	opkg list-changed-conffiles
 	```
 
-2.	Download OpenWRT trunk upgrade image and the md5sums:
-	* http://downloads.openwrt.org/snapshots/trunk/ar71xx/openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
-	* http://downloads.openwrt.org/snapshots/trunk/ar71xx/md5sums
+2.	Download OpenWRT upgrade image and the md5sums:
+
+	* http://downloads.openwrt.org/chaos_calmer/15.05/ar71xx/generic/openwrt-15.05-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
+	* http://downloads.openwrt.org/chaos_calmer/15.05/ar71xx/generic/md5sums
 
 3.	Verify the download:
 
 	```bash
-	grep -F openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin md5sums | md5sum -c
+	grep -F openwrt-15.05-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin md5sums | md5sum -c
 	```
 
 	Expected output:
 
 	```bash
-	openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin: OK
+	openwrt-15.05-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin: OK
 	```
 
 4.	Download original factory image (just in case):
 
-	http://www.tp-link.com/en/support/download/?model=TL-WR842ND&version=V1
+	http://www.tp-link.com/en/download/TL-WR842ND_V1.html
 
-5.	Log in to the router
+5.	Login to the router as root
 
 6.	Stop as many services as possible to free up RAM for the upgrade.
 
@@ -48,23 +49,44 @@ router from scratch or upgrade to a newer OpenWrt version.
 	echo 3 > /proc/sys/vm/drop_caches
 	```
 
-7.	Upload firmware image to /tmp directory on router, start the upgrade:
+7.	Upload firmware image to /tmp directory on router and run the upgrade:
 
 	```bash
-	sysupgrade -v /tmp/openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
-	```
-
-	If this does not work, you can do it using mtd, but in that case, *all config files will be lost*:
-
-	```bash
-	mtd -r write /tmp/openwrt-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin firmware
+	sysupgrade -v /tmp/openwrt-15.05-ar71xx-generic-tl-wr842n-v1-squashfs-sysupgrade.bin
 	```
 
 	When the upgrade is complete, the router shall reboot.
 
 	If the router doesn't come up, try a cold reset (unplug-wait-replug).
 
-8.	Local configuration:
+8.	Install packages
+
+	After an upgrade, all extra installed packages are gone, so these
+	must be reinstalled. Luckily, the configuration files under /etc
+	are preserved.
+
+	Download/refresh package meta-data:
+
+	```bash
+	opkg update
+	```
+
+	Install any extra packages you need:
+
+	```bash
+	opkg install openssh-sftp-server
+	opkg install kmod-usb-storage
+	opkg install ntfs-3g
+	opkg install kmod-fs-ext4
+	opkg install mount-utils kmod-loop losetup
+	opkg install blkid block-mount
+	opkg install ddns-scripts
+	opkg install nfs-kernel-server nfs-kernel-server-utils
+	opkg install samba36-server
+	opkg install rsync screen
+	```
+
+9.	Configuration:
 
 	```bash
 	# install SSH key
@@ -75,12 +97,6 @@ router from scratch or upgrade to a newer OpenWrt version.
 
 	# disable SSH password auth
 	vi /etc/config/dropbear
-
-	# download package meta-data
-	opkg update
-
-	# install SFTP support
-	opkg install openssh-sftp-server
 
 	# disable IPv6, enable SSH port on WAN interface
 	vi /etc/config/firewall
@@ -94,36 +110,26 @@ router from scratch or upgrade to a newer OpenWrt version.
 	# create mount points for external disks
 	mkdir -p /mnt/shares/passport
 	mkdir -p /mnt/shares/samsung
-	mkdir -p /mnt/shares/rpifs
-
-	# install external USB storage support
-	opkg install kmod-usb-storage
-
-	# install NTFS support
-	opkg install ntfs-3g
-
-	# install Ext4 support
-	opkg install kmod-fs-ext4
+	mkdir -p /mnt/shares/bitpool
 
 	# configure fstab
-	opkg install block-mount
 	vi /etc/config/fstab
 	/etc/init.d/fstab enable
 	/etc/init.d/fstab start
 	# note: this is broken at the moment (in Chaos Chalmer)
+	#
 	# I had to mount the USB disks manually in /etc/rc.local
+	# as block detect does not recognize NTFS partitions
 
 	# configure wireless
 	vi /etc/config/wireless
 
 	# configure DynDNS
-	opkg install ddns-scripts
 	vi /etc/config/ddns
 	/etc/init.d/ddns enable
 	/etc/init.d/ddns start
 
 	# setup NFS server
-	opkg install nfs-kernel-server nfs-kernel-server-utils
 	vi /etc/exports
 	/etc/init.d/portmap enable
 	/etc/init.d/nfsd enable
@@ -131,22 +137,16 @@ router from scratch or upgrade to a newer OpenWrt version.
 	/etc/init.d/nfsd start
 
 	# install Samba
-	opkg install samba36-server
 	vi /etc/config/samba
 	/etc/init.d/samba enable
 	/etc/init.d/samba start
 
-	# install real mount/umount + loop mount support
-	opkg install mount-utils kmod-loop losetup
-
-	# install some useful tools
-	opkg install blkid rsync screen
-
 	# add share user
 	opkg install shadow-useradd
 	useradd -d /mnt/shares -M share
+	```
 
-9.	Check that everything works as expected.
+10.	Check that everything works as expected.
 
-10.	Enjoy.
+11.	Enjoy.
 

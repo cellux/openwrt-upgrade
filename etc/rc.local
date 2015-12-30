@@ -1,0 +1,16 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+
+find_device_by_label() {
+  blkid | grep -iF "LABEL=\"$1\"" | cut -d: -f1
+}
+
+for label in passport samsung; do
+  dev="$(find_device_by_label $label)"
+  [ -n "$dev" ] && /bin/mount -t ntfs-3g -o rw,uid=65534,gid=65534,umask=002 $dev /mnt/shares/$label
+done
+
+/usr/sbin/iptables -I INPUT -p tcp --dport 22 -i eth0 -m state --state NEW -m recent --set
+/usr/sbin/iptables -I INPUT -p tcp --dport 22 -i eth0 -m state --state NEW -m recent  --update --seconds 60 --hitcount 4 -j DROP
+
+exit 0
